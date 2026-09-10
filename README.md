@@ -1,8 +1,10 @@
 # Strata Streamer Tool
 
-Strata Streamer Tool is a Windows application for streamers using the Strata GameReplays rating system with Command & Conquer Generals: Zero Hour.
+Strata Streamer Tool is a Windows application for streamers using the [Strata](https://strata.gamereplays.org/) GameReplays rating system on Generals Online.
 
-It monitors the Zero Hour replay file, retrieves the player's current Strata Elo rating and rank, and writes values to text files that can be displayed in OBS.
+Generals Online's game client is based on [The Super Hackers' GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode), which is itself based on [EA's open-source release of Command & Conquer: Generals – Zero Hour](https://github.com/electronicarts/CnC_Generals_Zero_Hour). The [Generals Online GameClient](https://github.com/GeneralsOnlineDevelopmentTeam/GameClient) is a fork of The Super Hackers' project.
+
+It monitors the Generals Online replay file, retrieves the player's current Strata Elo rating and rank, and writes values to text files that can be displayed in OBS.
 
 ## Requirements
 
@@ -60,23 +62,17 @@ Your actual location may differ depending on your installation and Windows confi
 
 OBS is only required if you want to display the generated values in your stream.
 
-The Strata Streamer Tool does **not** require the OBS Lua script for normal operation.
+The generated text files can be displayed using OBS Studio's built-in **Read from file** option.
 
-OBS can read the generated text files directly using its built-in **Read from file** option. This is sufficient when all text sources should remain visible normally.
-
-The included Lua script is useful when you want one or more text sources to appear only briefly after an update.
-
-If you use the Lua script for one temporary text source, it is recommended that you use the Lua script for **all Strata text sources**. This keeps the different Strata sources synchronized when the application updates them.
-
-No external Lua installation is required.
+For detailed OBS setup instructions, including the optional Lua integration, see [OBS Integration](https://github.com/Piddox/StrataStreamerTool/blob/main/obs/README.md).
 
 ### OBS Lua script
 
-The Lua script is optional. OBS can display the generated text files directly using its built-in **Read from file** option.
+The Lua script is optional and is only needed if you want text sources to appear temporarily after an update.
 
-The included Lua script is only needed if you want text sources to appear temporarily after an update. If you use the Lua script for one Strata text source, use it for all Strata text sources that you want synchronized.
+If you use the Lua script for one Strata text source, use it for all Strata text sources that you want synchronized. This keeps the different Strata sources synchronized when the application updates them.
 
-For detailed OBS setup instructions, including script configuration, trigger files, temporary displays, synchronization, and grouped sources, see [OBS Integration](obs/README.md).
+No external Lua installation is required.
 
 ## Installation
 
