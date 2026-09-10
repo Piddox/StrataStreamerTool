@@ -341,12 +341,6 @@ class RatingUpdater:
                 f"Rating update failed: {error}"
             )
 
-        log()
-
-        log(
-            "Waiting for the next game..."
-        )
-
         return True
 
     def format_change(self,value):

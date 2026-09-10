@@ -1,8 +1,10 @@
 from pathlib import Path
 
 from logger import log, log_block
-from replay_parser import read_replay_header
+from replay_parser import read_replay_metadata
 
+GAME_INTERNET = 5
+PLAYERTEMPLATE_OBSERVER = -2
 
 class ReplayWatcher:
     def __init__(
@@ -24,6 +26,7 @@ class ReplayWatcher:
 
         self.replay_start_time = None
         self.in_game = False
+        self.game_eligible = False
 
     def run(self):
         """
@@ -55,7 +58,7 @@ class ReplayWatcher:
 
         log_block(
             [
-                f"Stopped replay monitoring."
+                "Stopped replay monitoring."
             ]
         )
 
@@ -64,6 +67,7 @@ class ReplayWatcher:
         Establish the current replay as the initial state.
 
         An existing active replay is treated as already in progress.
+        Its eligibility is determined from the replay metadata.
         An existing completed replay is treated as already processed.
         """
 
@@ -82,11 +86,13 @@ class ReplayWatcher:
 
         if end_time == 0:
             self.in_game = True
+            self.game_eligible = self._is_game_eligible(state)
 
             log()
             log(
                 "Active game detected."
             )
+            self._log_game_eligibility()
             log(
                 "Game monitoring started."
             )
@@ -112,14 +118,15 @@ class ReplayWatcher:
             or start_time != self.replay_start_time
         ):
             self.replay_start_time = start_time
+            self.game_eligible = self._is_game_eligible(state)
 
             if end_time == 0:
                 self.in_game = True
 
-                log()
                 log(
                     "New game detected."
                 )
+                self._log_game_eligibility()
                 log(
                     "Game monitoring started."
                 )
@@ -140,16 +147,39 @@ class ReplayWatcher:
             and end_time != 0
         ):
             self.in_game = False
+            game_eligible = self.game_eligible
+            self.game_eligible = False
 
             log(
                 "Game end detected."
             )
 
-            self.on_game_end()
+            if game_eligible:
+                self.on_game_end()
+            else:
+                log(
+                    "Rating update skipped. "
+                    "Game is not eligible for a Strata rating update."
+                )
+            
+            log()
+            log(
+                "Waiting for the next game..."
+            )
+
+    def _log_game_eligibility(self):
+        if self.game_eligible:
+            log(
+                "Game is eligible for a Strata rating update."
+            )
+        else:
+            log(
+                "Game is not eligible for a Strata rating update. Strata API will not be called once the game ends."
+            )
 
     def _read_replay_state(self):
         """
-        Read the replay header.
+        Read the replay header and game metadata.
 
         Returns None if the replay is temporarily unavailable,
         incomplete, or invalid.
@@ -159,7 +189,7 @@ class ReplayWatcher:
             return None
 
         try:
-            return read_replay_header(
+            return read_replay_metadata(
                 self.replay_path
             )
 
@@ -168,3 +198,36 @@ class ReplayWatcher:
             ValueError
         ):
             return None
+        
+    def _is_game_eligible(self, state):
+        if state["original_game_mode"] != 5:
+            return False
+
+        human_players_excluding_observers = [
+            slot
+            for slot in state["slots"]
+            if slot["type"] == "human"
+            and slot["player_template"] != -2
+        ]
+
+        ai_players = [
+            slot
+            for slot in state["slots"]
+            if slot["type"] == "ai"
+        ]
+
+        if len(human_players_excluding_observers) != 2:
+            return False
+
+        if ai_players:
+            return False
+
+        player_1, player_2 = human_players_excluding_observers
+
+        if (
+            player_1["team_number"] >= 0
+            and player_1["team_number"] == player_2["team_number"]
+        ):
+            return False
+
+        return True
