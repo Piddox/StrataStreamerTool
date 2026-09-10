@@ -2,7 +2,7 @@
 
 Strata Streamer Tool is a Windows application for streamers using the Strata GameReplays rating system with Command & Conquer Generals: Zero Hour.
 
-It monitors the Zero Hour replay file, retrieves the player's current Strata rating and rank, and writes values to text files that can be displayed in OBS.
+It monitors the Zero Hour replay file, retrieves the player's current Strata Elo rating and rank, and writes values to text files that can be displayed in OBS.
 
 ## Requirements
 
