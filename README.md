@@ -23,7 +23,7 @@ Strata Streamer Tool is designed to make it easy to show Strata information on y
 
 While you play, the tool:
 
-1.  Monitors your Generals Online replay file.
+1.  Monitors your Generals Online game client's replay file.
 2.  Detects when a qualifying 1v1 Internet game has finished.
 3.  Waits for the match result to appear in Strata.
 4.  Retrieves your updated rating and rank.
@@ -49,9 +49,9 @@ You need:
 
 The application validates your API token and lets you select which linked Generals Online account to use.
 
-### Generals Online
+### Generals Online game client
 
-The tool monitors the replay file created by Generals Online:
+The tool monitors the replay file created by the Generals Online game client:
 
 ``` text
 00000000.rep
@@ -88,7 +88,7 @@ StrataStreamerTool.exe
 On first launch, the setup wizard will ask for:
 
 1.  Your Strata API token
-2.  Your Generals Online replay directory
+2.  Your game's replay directory
 3.  Which linked Generals Online account you want to use
 
 The configuration is saved automatically.
@@ -316,7 +316,7 @@ This utility does not contact the Strata API and uses generated test data.
 
 ## How it works
 
-The application monitors the Generals Online replay file for changes.
+The application monitors the game's replay file for changes.
 
 When a new game starts, the replay file becomes active. When the game ends, the replay header is updated with the end time.
 
