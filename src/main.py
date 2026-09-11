@@ -19,6 +19,8 @@ from updater import RatingUpdater
 from writer import OutputWriter
 from replay_watcher import ReplayWatcher
 
+from app_paths import APP_VERSION
+
 @dataclass
 class MonitoringSession:
 
@@ -86,7 +88,7 @@ def fetch_initial_rating(updater, writer, is_account_switch=False):
     log("Initial update successful.", False)
 
     log(
-        f"Overall Rating: "
+        f"Overall Elo: "
         f"{data['overall']['rating']}", False
     )
 
@@ -101,17 +103,17 @@ def fetch_initial_rating(updater, writer, is_account_switch=False):
         )
 
     log(
-        f"Seasonal Rating: "
+        f"Monthly Elo: "
         f"{data['season']['rating']}", False
     )
 
     season_rank = data["season"].get("rank")
 
     if season_rank is None:
-        log("Seasonal Rank: Unranked", False)
+        log("Monthly Rank: Unranked", False)
     else:
         log(
-            f"Seasonal Rank: "
+            f"Monthly Rank: "
             f"#{season_rank}", False
         )
 
@@ -320,9 +322,10 @@ def main():
             None,
             "         Strata Streamer Tool",
             "           Made by Piddox",
-            None,
         ]
     )
+    log("               "+APP_VERSION,False)
+    log()
 
     ensure_directories()
 

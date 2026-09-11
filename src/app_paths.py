@@ -2,8 +2,9 @@ from pathlib import Path
 import os
 import sys
 
-APP_NAME = "StrataStreamerTool"
 
+APP_NAME = "StrataStreamerTool"
+APP_VERSION = "v0.0.3"
 
 def get_application_directory():
     """
@@ -15,7 +16,6 @@ def get_application_directory():
     """
 
     if getattr(sys, "frozen", False):
-
         return Path(sys.executable).parent
 
     return Path(__file__).resolve().parent.parent
@@ -25,6 +25,15 @@ def get_output_directory():
     """
     Return the directory used for generated OBS output files.
     """
+
+    if getattr(sys, "frozen", False):
+        local_appdata = os.getenv("LOCALAPPDATA")
+
+        return (
+            Path(local_appdata)
+            / APP_NAME
+            / "output"
+        )
 
     return (
         get_application_directory()

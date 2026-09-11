@@ -13,3 +13,6 @@ output/
 
 .DS_Store
 Thumbs.db
+
+build/
+dist/

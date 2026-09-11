@@ -315,13 +315,13 @@ class RatingUpdater:
                 log("Rating updated successfully.")
 
                 log(
-                    f"Overall Rating: "
+                    f"Overall Elo: "
                     f"{data['overall']['rating']} "
                     f"({overall_rating_change})"
                 )
 
                 log(
-                    f"Seasonal Rating: "
+                    f"Monthly Elo: "
                     f"{data['season']['rating']} "
                     f"({season_rating_change})"
                 )

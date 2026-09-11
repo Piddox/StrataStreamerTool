@@ -6,11 +6,15 @@ from api import (
     StrataAPI,
     NoLinkedPlayersError,
 )
-from app_paths import get_appdata_directory
+from app_paths import get_appdata_directory, get_output_directory
 
 
 CONFIG_DIRECTORY = (
     get_appdata_directory()
+)
+
+OUTPUT_DIRECTORY = (
+    get_output_directory()
 )
 
 CONFIG_PATH = (
@@ -236,6 +240,13 @@ def run_setup_wizard():
 
     api_token = prompt_for_api_token()
 
+    print()
+    print("Your output directory is:")
+    print(
+        OUTPUT_DIRECTORY
+    )
+    print("You can find all the text sources to be used in OBS here.")
+
     replays_directory = (
         prompt_for_replays_directory()
     )
@@ -256,6 +267,7 @@ def run_setup_wizard():
     print(
         f"Config location: {CONFIG_PATH}"
     )
+    print()
 
     return config
 
@@ -284,7 +296,7 @@ def prompt_for_api_token():
         print()
 
         token = prompt_hidden_input(
-            "Enter your Strata API token. Paste it here by clicking right-mouse (not by Ctrl + V!), then hit Enter): "
+            "Enter your Strata API token and hit Enter: "
         ).strip()
 
         if not token:
@@ -335,14 +347,19 @@ def prompt_for_api_token():
 
             continue
 
-        print()
         print(
             "API token validated successfully."
         )
 
-        print(
-            f"Found {len(players)} linked GO account(s)."
-        )
+        print()
+        if len(players) == 1:
+            print(
+                f"Found 1 linked GO account."
+            )
+        else:
+             print(
+                f"Found {len(players)} linked GO accounts."
+            )
 
         return token
 

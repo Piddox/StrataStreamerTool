@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from logger import log, log_block
+from logger import log
 from replay_parser import read_replay_metadata
 
 GAME_INTERNET = 5
@@ -56,10 +56,9 @@ class ReplayWatcher:
             if self.stop_event.wait(1):
                 break
 
-        log_block(
-            [
-                "Stopped replay monitoring."
-            ]
+        log(
+                "Stopped replay monitoring.",
+                True
         )
 
     def _establish_baseline(self):
