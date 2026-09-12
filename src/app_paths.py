@@ -4,7 +4,7 @@ import sys
 
 
 APP_NAME = "StrataStreamerTool"
-APP_VERSION = "v0.0.4"
+APP_VERSION = "v1.0.0"
 
 def get_application_directory():
     """
