@@ -1,10 +1,18 @@
 # Strata Streamer Tool
 
-Strata Streamer Tool is a Windows application for streamers using the [Strata](https://strata.gamereplays.org/) rating system on Generals Online.
+Strata Streamer Tool is a Windows application for streamers using the [Strata](https://strata.gamereplays.org/) rating system on Generals Online (GO).
 
 It automatically monitors your current replay file, detects when a match has finished, retrieves your latest Strata rating and rank, and writes the results to text files that can be displayed in OBS.
 
 You do not need Python or any programming knowledge to use the packaged Windows version.
+
+## For Streamers
+
+If you use Strata Streamer Tool on your stream, please include a link to Strata in your stream description.
+
+This is expected for streams on YouTube, Twitch, Kick, and other streaming platforms.
+
+[https://strata.gamereplays.org/](https://strata.gamereplays.org/)
 
 ## Download
 
@@ -19,12 +27,12 @@ The executable is standalone and does not require Python to be installed.
 
 ## What does it do?
 
-Strata Streamer Tool is designed to make it easy to show Strata information on your Generals Online stream.
+Strata Streamer Tool is designed to make it easy to show Strata information on your stream.
 
 While you play, the tool:
 
-1.  Monitors your Generals Online game client's replay file.
-2.  Detects when a qualifying 1v1 Internet game has finished.
+1.  Monitors your GO game client's replay file.
+2.  Detects when an eligible 1v1 game has finished.
 3.  Waits for the match result to appear in Strata.
 4.  Retrieves your updated rating and rank.
 5.  Updates text files containing your Strata information.
@@ -47,11 +55,11 @@ You need:
 -   A valid Strata API token
 -   At least one Generals Online account linked to your Strata account
 
-The application validates your API token and lets you select which linked Generals Online account to use.
+The application validates your API token and lets you select which linked GO account to use.
 
 ### Generals Online game client
 
-The tool monitors the replay file created by the Generals Online game client:
+The tool monitors the replay file created by the GO game client:
 
 ``` text
 00000000.rep
@@ -89,7 +97,7 @@ On first launch, the setup wizard will ask for:
 
 1.  Your Strata API token
 2.  Your game's replay directory
-3.  Which linked Generals Online account you want to use
+3.  Which linked GO account you want to use
 
 The configuration is saved automatically.
 
@@ -233,7 +241,7 @@ Make sure:
 
 ### No linked Generals Online account is available
 
-Your Strata account must have at least one Generals Online account linked to it.
+Your Strata account must have at least one GO account linked to it.
 
 ### The rating does not update after a game
 
@@ -290,7 +298,7 @@ On first launch, the setup wizard will ask for:
 
 1.  Your Strata API token
 2.  Your Zero Hour replay directory
-3.  Which linked Generals Online account you want to use
+3.  Which linked GO account you want to use
 
 The configuration is saved automatically.
 
@@ -330,7 +338,7 @@ The application uses replay information to determine whether a game is eligible 
 
 ## Related projects
 
-Generals Online's game client is based on [The Super Hackers' GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode), which is itself based on [EA's open-source release of Command & Conquer: Generals Zero Hour](https://github.com/electronicarts/CnC_Generals_Zero_Hour).
+GO's game client is based on [The Super Hackers' GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode), which is itself based on [EA's open-source release of Command & Conquer: Generals Zero Hour](https://github.com/electronicarts/CnC_Generals_Zero_Hour).
 
 The [Generals Online GameClient](https://github.com/GeneralsOnlineDevelopmentTeam/GameClient) is a fork of The Super Hackers' project.
 

@@ -92,12 +92,12 @@ class OutputWriter:
             # --------------------------------------------------
 
             "overall_rank_label.txt":
-                f"Rank {overall_rank_number}",
+                f"Rank: {overall_rank_number}",
 
             "overall_elo_and_rank_label.txt":
                 (
                     f"Elo: {overall_rating} "
-                    f"(Rank {overall_rank_number})"
+                    f"(Rank: {overall_rank_number})"
                 ),
 
             "overall_rank_hash.txt":
@@ -136,12 +136,12 @@ class OutputWriter:
             # --------------------------------------------------
 
             "monthly_rank_label.txt":
-                f"Rank {season_rank_number}",
+                f"Rank: {season_rank_number}",
 
             "monthly_elo_and_rank_label.txt":
                 (
                     f"Elo: {season_rating} "
-                    f"(Rank {season_rank_number})"
+                    f"(Rank: {season_rank_number})"
                 ),
 
             "monthly_rank_hash.txt":
@@ -187,6 +187,9 @@ class OutputWriter:
                 "overall_elo_change.txt":
                     overall_change,
 
+                "overall_elo_change_label.txt":
+                    f"Elo: {overall_change}",
+
                 "overall_elo_and_elo_change_label.txt":
                     (
                         f"Elo: {overall_rating} "
@@ -199,12 +202,18 @@ class OutputWriter:
                 "overall_rank_change.txt":
                     overall_rank_change,
 
+                "overall_rank_change_label.txt":
+                    f"Rank: {overall_rank_change}",
+
                 # --------------------------------------------------
                 # MONTHLY LAST MATCH CHANGE
                 # --------------------------------------------------
 
                 "monthly_elo_change.txt":
                     season_change,
+
+                "monthly_elo_change_label.txt":
+                    f"Elo: {season_change}",
 
                 "monthly_elo_and_elo_change_label.txt":
                     (
@@ -217,6 +226,9 @@ class OutputWriter:
 
                 "monthly_rank_change.txt":
                     season_rank_change,
+
+                "monthly_rank_change_label.txt":
+                    f"Rank: {season_rank_change}",
             })
 
         update_trigger = datetime.now().isoformat()

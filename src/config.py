@@ -138,10 +138,11 @@ def get_selected_player(
     force_selection=False
 ):
     """
-    Return the previously selected GO account when possible.
+    Return the selected GO account.
 
-    If force_selection is True, or no valid saved account
-    exists, show the account selection menu.
+    If exactly one GO account is linked, select it automatically.
+    Otherwise, use the previously selected account when possible,
+    or show the account selection menu.
     """
 
     player_ids = api.get_available_players()
@@ -151,6 +152,18 @@ def get_selected_player(
         raise RuntimeError(
             "No linked GO accounts were found."
         )
+
+    # If only one account is linked, select it automatically.
+    if len(player_ids) == 1:
+
+        selected_player_id = player_ids[0]
+
+        save_selected_player(
+            config,
+            selected_player_id
+        )
+
+        return selected_player_id
 
     saved_player_id = config.get(
         "selected_player_id"
