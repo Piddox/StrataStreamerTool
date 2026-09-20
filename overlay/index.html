@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strata Overlay</title>
+    <link rel="stylesheet" href="/overlay/style.css">
+</head>
+
+<body>
+    <div id="overlay">
+
+        <div id="hud-1" class="hud-panel">
+            <img
+                class="hud-artwork"
+                alt=""
+            >
+
+            <div class="hud-content">
+                <div
+                    class="basic-elo-rank"
+                    data-template="rating_rank"
+                >
+                    <div class="basic-row basic-elo-row">
+                        <span class="basic-label">ELO:</span>
+
+                        <div class="basic-value-container">
+                            <span class="basic-normal-value"></span>
+
+                            <span class="basic-change-value">
+                                <span
+                                    class="basic-change-indicator"
+                                    aria-hidden="true"
+                                ></span>
+                                <span class="basic-change-number"></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="basic-row basic-rank-row">
+                        <span class="basic-label">RANK:</span>
+
+                        <div class="basic-value-container">
+                            <span class="basic-normal-value"></span>
+
+                            <span class="basic-change-value">
+                                <span
+                                    class="basic-change-indicator"
+                                    aria-hidden="true"
+                                ></span>
+                                <span class="basic-change-number"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="session-template"
+                    data-template="session"
+                >
+                    <div class="session-title">
+                        CURRENT SESSION
+                    </div>
+
+                    <div class="session-row session-elo-row">
+                        <span class="session-label">ELO:</span>
+
+                        <div class="session-value-container">
+                            <span class="session-change-indicator" aria-hidden="true"></span>
+                            <span class="session-value"></span>
+                        </div>
+                    </div>
+
+                    <div class="session-row session-rank-row">
+                        <span class="session-label">RANK:</span>
+
+                        <div class="session-value-container">
+                            <span class="session-change-indicator" aria-hidden="true"></span>
+                            <span class="session-value"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="hud-2" class="hud-panel">
+            <img
+                class="hud-artwork"
+                alt=""
+            >
+
+            <div class="hud-content">
+                <div
+                    class="basic-elo-rank"
+                    data-template="rating_rank"
+                >
+                    <div class="basic-row basic-elo-row">
+                        <span class="basic-label">ELO:</span>
+
+                        <div class="basic-value-container">
+                            <span class="basic-normal-value"></span>
+
+                            <span class="basic-change-value">
+                                <span
+                                    class="basic-change-indicator"
+                                    aria-hidden="true"
+                                ></span>
+                                <span class="basic-change-number"></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="basic-row basic-rank-row">
+                        <span class="basic-label">RANK:</span>
+
+                        <div class="basic-value-container">
+                            <span class="basic-normal-value"></span>
+
+                            <span class="basic-change-value">
+                                <span
+                                    class="basic-change-indicator"
+                                    aria-hidden="true"
+                                ></span>
+                                <span class="basic-change-number"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="session-template"
+                    data-template="session"
+                >
+                    <div class="session-title">
+                        CURRENT SESSION
+                    </div>
+
+                    <div class="session-row session-elo-row">
+                        <span class="session-label">ELO:</span>
+
+                        <div class="session-value-container">
+                            <span class="session-change-indicator" aria-hidden="true"></span>
+                            <span class="session-value"></span>
+                        </div>
+                    </div>
+
+                    <div class="session-row session-rank-row">
+                        <span class="session-label">RANK:</span>
+
+                        <div class="session-value-container">
+                            <span class="session-change-indicator" aria-hidden="true"></span>
+                            <span class="session-value"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/overlay/overlay.js"></script>
+    <script src="/overlay/overlay_data.js"></script>
+</body>
+</html>

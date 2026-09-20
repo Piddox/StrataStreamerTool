@@ -67,8 +67,8 @@ class RatingUpdater:
             "overall_rating_change": 0,
             "overall_rank_change": None,
 
-            "season_rating_change": 0,
-            "season_rank_change": None,
+            "monthly_rating_change": 0,
+            "monthly_rank_change": None,
         }
 
         if self.previous_data is None:
@@ -112,42 +112,42 @@ class RatingUpdater:
                 - current_overall_rank
             )
 
-        # Season rating
+        # Monthly rating
 
-        previous_season_rating = (
+        previous_monthly_rating = (
             self.previous_data["season"].get("rating")
         )
 
-        current_season_rating = (
+        current_monthly_rating = (
             current_data["season"].get("rating")
         )
 
         if (
-            previous_season_rating is not None
-            and current_season_rating is not None
+            previous_monthly_rating is not None
+            and current_monthly_rating is not None
         ):
-            changes["season_rating_change"] = (
-                current_season_rating
-                - previous_season_rating
+            changes["monthly_rating_change"] = (
+                current_monthly_rating
+                - previous_monthly_rating
             )
 
-        # Season rank
+        # Monthly rank
 
-        previous_season_rank = (
+        previous_monthly_rank = (
             self.previous_data["season"].get("rank")
         )
 
-        current_season_rank = (
+        current_monthly_rank = (
             current_data["season"].get("rank")
         )
 
         if (
-            previous_season_rank is not None
-            and current_season_rank is not None
+            previous_monthly_rank is not None
+            and current_monthly_rank is not None
         ):
-            changes["season_rank_change"] = (
-                previous_season_rank
-                - current_season_rank
+            changes["monthly_rank_change"] = (
+                previous_monthly_rank
+                - current_monthly_rank
             )
 
         return changes
@@ -165,8 +165,8 @@ class RatingUpdater:
             "overall_session_rating_change": 0,
             "overall_session_rank_change": None,
 
-            "season_session_rating_change": 0,
-            "season_session_rank_change": None,
+            "monthly_session_rating_change": 0,
+            "monthly_session_rank_change": None,
         }
 
         if self.session_start_data is None:
@@ -215,45 +215,45 @@ class RatingUpdater:
             )
 
         # --------------------------------------------------
-        # SEASON RATING
+        # MONTHLY RATING
         # --------------------------------------------------
 
-        starting_season_rating = (
+        starting_monthly_rating = (
             self.session_start_data["season"].get("rating")
         )
 
-        current_season_rating = (
+        current_monthly_rating = (
             current_data["season"].get("rating")
         )
 
         if (
-            starting_season_rating is not None
-            and current_season_rating is not None
+            starting_monthly_rating is not None
+            and current_monthly_rating is not None
         ):
-            changes["season_session_rating_change"] = (
-                current_season_rating
-                - starting_season_rating
+            changes["monthly_session_rating_change"] = (
+                current_monthly_rating
+                - starting_monthly_rating
             )
 
         # --------------------------------------------------
-        # SEASON RANK
+        # MONTHLY RANK
         # --------------------------------------------------
 
-        starting_season_rank = (
+        starting_monthly_rank = (
             self.session_start_data["season"].get("rank")
         )
 
-        current_season_rank = (
+        current_monthly_rank = (
             current_data["season"].get("rank")
         )
 
         if (
-            starting_season_rank is not None
-            and current_season_rank is not None
+            starting_monthly_rank is not None
+            and current_monthly_rank is not None
         ):
-            changes["season_session_rank_change"] = (
-                starting_season_rank
-                - current_season_rank
+            changes["monthly_session_rank_change"] = (
+                starting_monthly_rank
+                - current_monthly_rank
             )
 
         return changes
@@ -306,9 +306,9 @@ class RatingUpdater:
                     )
                 )
 
-                season_rating_change = (
+                monthly_rating_change = (
                     self.format_change(
-                        changes["season_rating_change"]
+                        changes["monthly_rating_change"]
                     )
                 )
 
@@ -323,7 +323,7 @@ class RatingUpdater:
                 log(
                     f"Monthly Elo: "
                     f"{data['season']['rating']} "
-                    f"({season_rating_change})"
+                    f"({monthly_rating_change})"
                 )
 
             else:
@@ -476,19 +476,19 @@ class RatingUpdater:
         ):
             return True
 
-        previous_season_matches = (
+        previous_monthly_matches = (
             previous_data["season"].get("matches")
         )
 
-        current_season_matches = (
+        current_monthly_matches = (
             current_data["season"].get("matches")
         )
 
         if (
-            previous_season_matches is not None
-            and current_season_matches is not None
-            and current_season_matches
-            != previous_season_matches
+            previous_monthly_matches is not None
+            and current_monthly_matches is not None
+            and current_monthly_matches
+            != previous_monthly_matches
         ):
             return True
 

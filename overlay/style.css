@@ -1,0 +1,352 @@
+:root {
+    /* Basic template. Basic = Rank + Rating template */
+
+    --basic-font-size: 80px;
+    --basic-line-height: 1;
+
+    --basic-normal-gap: 35px;
+    --basic-change-label-gap: 15px;
+    --basic-change-indicator-size: 50px;
+    --basic-change-indicator-gap: 2px;
+
+
+    /* Session template */
+
+    --session-font-size: 80px;
+    --session-line-height: 1;
+
+    --session-change-label-gap: 15px;
+    --session-change-indicator-size: 50px;
+    --session-change-indicator-gap: 2px;
+
+    --template-text-color: rgb(192, 192, 192);
+
+    --template-change-transition-ms: 250ms;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: transparent;
+    font-family: "Oxanium", Arial, Helvetica, sans-serif;
+}
+
+.hud-panel {
+    position: fixed;
+    color: var(--template-text-color);
+    opacity: 0;
+    transition: opacity 0.1s ease;
+}
+
+.hud-panel.visible {
+    opacity: 1;
+}
+
+.hud-artwork {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.hud-content {
+    position: absolute;
+    inset: 0;
+}
+
+.basic-elo-rank {
+    position: absolute;
+    inset: 0;
+    transform-origin: left bottom;
+}
+
+[data-template] {
+    display: none;
+}
+
+[data-template].active {
+    display: block;
+}
+
+.basic-row {
+    position: absolute;
+    left: var(--basic-row-left);
+    bottom: var(--basic-row-bottom);
+
+    display: flex;
+    align-items: center;
+
+    font-size: var(--basic-font-size);
+    font-weight: 600;
+    line-height: var(--basic-line-height);
+    white-space: nowrap;
+}
+
+.basic-elo-row {
+    --basic-row-bottom: var(--basic-row-1-bottom);
+}
+
+.basic-rank-row {
+    --basic-row-bottom: var(--basic-row-2-bottom);
+}
+
+.basic-label {
+    flex: 0 0 auto;
+    margin-right: var(--basic-normal-gap);
+}
+
+.basic-value-container {
+    position: relative;
+    flex: 0 0 auto;
+    display: grid;
+    align-items: center;
+}
+
+.basic-normal-value,
+.basic-change-value {
+    grid-area: 1 / 1;
+
+    transition:
+        opacity var(--template-change-transition-ms) ease;
+}
+
+.basic-normal-value {
+    opacity: 1;
+}
+
+.basic-change-value {
+    display: none;
+    align-items: center;
+    pointer-events: none;
+}
+
+.basic-row.change-mode .basic-label {
+    margin-right: var(--basic-change-label-gap);
+}
+
+.basic-row.change-mode .basic-normal-value {
+    opacity: 0;
+}
+
+.basic-row.change-mode .basic-change-value {
+    display: flex;
+}
+
+.basic-row.change-mode .basic-change-indicator {
+    display: block;
+}
+
+.basic-change-indicator {
+    position: relative;
+
+    width: var(--basic-change-indicator-size);
+    height: var(--basic-change-indicator-size);
+    margin-right: var(--basic-change-indicator-gap);
+    flex: 0 0 auto;
+}
+
+/*
+    Temporary CSS indicators for the first implementation.
+    We can replace these with the supplied PNG assets later without
+    changing the template layout.
+*/
+
+.basic-change-indicator::before,
+.basic-change-indicator::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+
+/* Up / down triangle */
+
+.basic-change-indicator::before {
+    clip-path: polygon(
+        50% 0%,
+        100% 100%,
+        0% 100%
+    );
+
+    border-radius: 12%;
+}
+
+.basic-change-indicator.up::before {
+    background: rgb(30, 227, 97);
+}
+
+.basic-change-indicator.down::before {
+    background: rgb(212, 0, 0);
+}
+
+/* Equal */
+
+.basic-change-indicator.equal::before,
+.basic-change-indicator.equal::after {
+    left: 0;
+    right: 0;
+    inset-block: auto;
+    height: 20%;
+
+    clip-path: none;
+    border-radius: 15%;
+    background: rgb(170, 170, 170);
+}
+
+.basic-change-indicator.equal::before {
+    top: 20%;
+}
+
+.basic-change-indicator.equal::after {
+    top: 60%;
+}
+
+.basic-change-indicator.down {
+    transform: rotate(180deg);
+}
+
+.basic-change-number {
+    display: block;
+}
+
+#overlay {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    visibility: hidden;
+}
+
+#overlay.ready {
+    visibility: visible;
+}
+
+.session-template {
+    position: absolute;
+    inset: 0;
+}
+
+.session-title,
+.session-row {
+    position: absolute;
+
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.session-title {
+    left: 50%;
+    bottom: var(--session-title-bottom);
+    transform: translateX(-50%);
+    font-size: var(--session-title-font-size);
+}
+
+.session-row {
+    left: var(--session-row-left);
+    font-size: var(--session-font-size);
+}
+
+.session-elo-row {
+    bottom: var(--session-row-1-bottom);
+}
+
+.session-rank-row {
+    bottom: var(--session-row-2-bottom);
+}
+
+.session-row {
+    display: flex;
+    align-items: center;
+}
+
+.session-label {
+    flex: 0 0 auto;
+    margin-right: var(--session-change-label-gap);
+}
+
+.session-value-container {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    flex: 0 0 auto;
+}
+
+.session-change-indicator {
+    position: relative;
+
+    width: var(--session-change-indicator-size);
+    height: var(--session-change-indicator-size);
+
+    margin-right: var(--session-change-indicator-gap);
+
+    flex: 0 0 auto;
+}
+
+.session-change-indicator::before,
+.session-change-indicator::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+
+/* Up / down triangle */
+
+.session-change-indicator::before {
+    clip-path: polygon(
+        50% 0%,
+        100% 100%,
+        0% 100%
+    );
+
+    border-radius: 12%;
+}
+
+.session-change-indicator.up::before {
+    background: rgb(30, 227, 97);
+}
+
+.session-change-indicator.down::before {
+    background: rgb(212, 0, 0);
+}
+
+/* Equal */
+
+.session-change-indicator.equal::before,
+.session-change-indicator.equal::after {
+    left: 0;
+    right: 0;
+    inset-block: auto;
+
+    height: 20%;
+
+    clip-path: none;
+    border-radius: 15%;
+    background: rgb(170, 170, 170);
+}
+
+.session-change-indicator.equal::before {
+    top: 20%;
+}
+
+.session-change-indicator.equal::after {
+    top: 60%;
+}
+
+.session-change-indicator.down {
+    transform: rotate(180deg);
+}
+
+.session-value {
+    display: block;
+    opacity: 1;
+
+    transition:
+        opacity var(--template-change-transition-ms) ease;
+}
+
+.session-content-changing .session-value {
+    opacity: 0;
+}

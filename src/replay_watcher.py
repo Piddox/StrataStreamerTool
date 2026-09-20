@@ -11,12 +11,14 @@ class ReplayWatcher:
         self,
         replay_directory,
         stop_event,
+        on_game_start,
         on_game_end
     ):
         self.replay_directory = Path(
             replay_directory
         )
         self.stop_event = stop_event
+        self.on_game_start = on_game_start
         self.on_game_end = on_game_end
 
         self.replay_path = (
@@ -27,6 +29,7 @@ class ReplayWatcher:
         self.replay_start_time = None
         self.in_game = False
         self.game_eligible = False
+        self.local_player_template = None
 
     def run(self):
         """
@@ -84,8 +87,11 @@ class ReplayWatcher:
         self.replay_start_time = start_time
 
         if end_time == 0:
+            self.local_player_template = state["local_player_template"]
+
             self.in_game = True
             self.game_eligible = self._is_game_eligible(state)
+            self.on_game_start(self.local_player_template)
 
             log()
             log(
@@ -117,7 +123,12 @@ class ReplayWatcher:
             or start_time != self.replay_start_time
         ):
             self.replay_start_time = start_time
+
+            self.local_player_template = state["local_player_template"]
+
             self.game_eligible = self._is_game_eligible(state)
+
+            self.on_game_start(self.local_player_template)
 
             if end_time == 0:
                 self.in_game = True
@@ -154,8 +165,9 @@ class ReplayWatcher:
             )
 
             if game_eligible:
-                self.on_game_end()
+                self.on_game_end(True)
             else:
+                self.on_game_end(False)
                 log(
                     "Rating update skipped. "
                     "Game is not eligible for a Strata rating update."

@@ -120,10 +120,10 @@ def main():
             "overall_rank_change":
                 new_overall_rank - overall_rank,
 
-            "season_rating_change":
+            "monthly_rating_change":
                 new_monthly_rating - monthly_rating,
 
-            "season_rank_change":
+            "monthly_rank_change":
                 new_monthly_rank - monthly_rank,
 
             # Session changes are cumulative because they are measured
@@ -134,10 +134,10 @@ def main():
             "overall_session_rank_change":
                 new_overall_rank - overall_rank_start,
 
-            "season_session_rating_change":
+            "monthly_session_rating_change":
                 new_monthly_rating - monthly_rating_start,
 
-            "season_session_rank_change":
+            "monthly_session_rank_change":
                 new_monthly_rank - monthly_rank_start,
         }
 
@@ -147,7 +147,7 @@ def main():
                 "rank": new_overall_rank,
                 "matches": overall_matches + iteration,
             },
-            "season": {
+            "monthly": {
                 "rating": new_monthly_rating,
                 "rank": new_monthly_rank,
                 "matches": monthly_matches + iteration,
@@ -168,7 +168,7 @@ def main():
             f"({changes['overall_rating_change']:+d}), "
             f"Rank #{new_overall_rank} | "
             f"Monthly Elo {new_monthly_rating} "
-            f"({changes['season_rating_change']:+d}), "
+            f"({changes['monthly_rating_change']:+d}), "
             f"Rank #{new_monthly_rank}"
         )
 

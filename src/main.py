@@ -18,6 +18,7 @@ from app_paths import (
 from updater import RatingUpdater
 from writer import OutputWriter
 from replay_watcher import ReplayWatcher
+from overlay_server import OverlayServer
 
 from app_paths import APP_VERSION
 
@@ -107,14 +108,14 @@ def fetch_initial_rating(updater, writer, is_account_switch=False):
         f"{data['season']['rating']}", False
     )
 
-    season_rank = data["season"].get("rank")
+    monthly_rank = data["season"].get("rank")
 
-    if season_rank is None:
+    if monthly_rank is None:
         log("Monthly Rank: Unranked", False)
     else:
         log(
             f"Monthly Rank: "
-            f"#{season_rank}", False
+            f"#{monthly_rank}", False
         )
 
     return True
@@ -130,27 +131,37 @@ def start_watcher(
     Start the replay watcher in a background thread.
     """
 
-    def on_game_end():
-        updater.handle_game_end(
-            stop_event,
-            lambda data, changes, update_match_changes, trigger_match_overlays:
-                handle_rating_update(
-                    writer,
-                    updater.player_id,
-                    data,
-                    changes,
-                    update_match_changes,
-                    trigger_match_overlays
-                ),
-            config.get(
-                "rating_update_delay_seconds",
-                1
+    def on_game_end(update_ratings):
+        writer.write_game_end()
+
+        if update_ratings:
+            updater.handle_game_end(
+                stop_event,
+                lambda data, changes, update_match_changes, trigger_match_overlays:
+                    handle_rating_update(
+                        writer,
+                        updater.player_id,
+                        data,
+                        changes,
+                        update_match_changes,
+                        trigger_match_overlays
+                    ),
+                config.get(
+                    "rating_update_delay_seconds",
+                    1
+                )
             )
+
+    def on_game_start(local_player_template):
+        writer.write_game_start(
+            local_player_template
         )
 
+    
     watcher = ReplayWatcher(
         replay_directory=config["replays_directory"],
         stop_event=stop_event,
+        on_game_start=on_game_start,
         on_game_end=on_game_end
     )
 
@@ -194,6 +205,9 @@ def show_commands():
             "Commands:",
             "[S] Switch to another linked GO account",
             "[C] Change API token",
+            "[G] Toggle test in-game state",
+            "[P] Cycle test HUD positions",
+            "[T] Cycle test overlay data",
             "[Q] Quit"
         ]
     )
@@ -322,30 +336,38 @@ def main():
             None,
             "         Strata Streamer Tool",
             "           Made by Piddox",
+            "     Artwork by NoraUnsupervised"
         ]
     )
-    log("               "+APP_VERSION,False)
+    log("               " + APP_VERSION, False)
     log()
 
     ensure_directories()
 
-    config = get_or_create_config()
-
-    api = StrataAPI(
-        config["api_token"]
-    )
-
-    session = start_monitoring_session(
-        api,
-        config
-    )
-
-    if session is None:
-        return
-
-    show_commands()
+    overlay_server = OverlayServer()
+    session = None
 
     try:
+
+        overlay_url = overlay_server.start()
+
+        log(f"Browser Source overlay available at: {overlay_url}",False)
+
+        config = get_or_create_config()
+
+        api = StrataAPI(
+            config["api_token"]
+        )
+
+        session = start_monitoring_session(
+            api,
+            config
+        )
+
+        if session is None:
+            return
+
+        show_commands()
 
         while True:
 
@@ -392,6 +414,39 @@ def main():
                     )
 
                     show_commands()
+
+                if key == "g":
+
+                    overlay_server.toggle_test_state()
+
+                    state = (
+                        "in-game"
+                        if overlay_server.in_game
+                        else "out-of-game"
+                    )
+
+                    log(
+                        f"Test overlay state changed to {state}.",
+                        False
+                    )
+
+                if key == "p":
+
+                    overlay_server.cycle_test_positions()
+
+                    log(
+                        "Test HUD positions changed.",
+                        False
+                    )
+
+                if key == "t":
+
+                    overlay_server.cycle_test_data()
+
+                    log(
+                        "Test overlay data changed.",
+                        False
+                    )
 
                 if key == "c":
 
@@ -456,16 +511,28 @@ def main():
             "Stopping Strata Streamer Tool..."
         )
 
+    except RuntimeError as error:
+
+        log()
+        log(
+            f"ERROR: {error}"
+        )
+
     finally:
 
-        stop_watcher(
-            session.stop_event,
-            session.watcher_thread
-        )
+        if session is not None:
+
+            stop_watcher(
+                session.stop_event,
+                session.watcher_thread
+            )
+
+        overlay_server.stop()
 
         log()
 
         log("Strata Streamer Tool closed.")
+
 
 if __name__ == "__main__":
     main()
