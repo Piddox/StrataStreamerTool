@@ -2,7 +2,7 @@
 name: Bug
 about: Create a report to help us improve
 title: "[Bug]"
-labels: ''
+labels: bug
 assignees: Piddox
 type: Bug
 
