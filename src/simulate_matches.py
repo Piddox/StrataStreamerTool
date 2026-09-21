@@ -1,188 +1,240 @@
 """
-Test utility for the Strata Streamer Tool output files.
+Continuous test utility for the Strata Streamer Tool.
 
-Place this file next to main.py/writer.py (normally in src/) and run:
+Simulates the current game-start / game-end lifecycle while also running
+the local OverlayServer, so the browser/OBS overlay can be tested against
+the same HTTP endpoints used by the real application.
 
-    python test_output.py
+Each cycle:
+1. Start with the current Elo/rank.
+2. Randomly select GLA, USA, or China.
+3. Write the current rating/rank state.
+4. Call write_game_start() to add local_player_faction.
+5. Wait 3 seconds.
+6. Generate a random Elo/rank change and calculate the new values.
+7. Write the updated rating/rank state, including mirrored monthly changes.
+8. Call write_game_end() to remove local_player_faction.
+9. Wait 10 seconds and repeat.
 
-The script uses the exact same output-directory helper as main.py and
-performs one simulated match/update. Run it again whenever you want
-another update.
+Stop with Ctrl+C.
 """
 
 import random
+import time
 
 from writer import OutputWriter
+from overlay_server import OverlayServer
 from app_paths import get_output_directory
 
 
-def generate_test_data(
-    overall_rating,
-    overall_rank,
-    monthly_rating,
-    monthly_rank,
+FACTIONS = {
+    "GLA": 4,
+    "USA": 2,
+    "China": 8,
+}
+
+PLAYER_ID = 12345
+STARTING_RATING = 1500
+STARTING_RANK = 100
+STARTING_MATCHES = 100
+
+
+def generate_changes():
+    """Generate an Elo change from +/-2..40 and a rank change from 0..15.
+
+    When rank_change is non-zero, its sign always matches the Elo change.
+    """
+    elo_change = random.randint(2, 40)
+
+    if random.choice((True, False)):
+        elo_change = -elo_change
+
+    rank_change = random.randint(0, 15)
+
+    if rank_change and elo_change < 0:
+        rank_change = -rank_change
+
+    return elo_change, rank_change
+
+
+def build_changes(
+    elo_change,
+    rank_change,
+    session_elo_change,
+    session_rank_change,
 ):
-    """Generate one plausible rating update."""
+    """Build the changes structure expected by the current writer.
 
-    overall_change = random.choice(
-        [-9, -7, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 7, 9, 12, 15]
-    )
+    Monthly changes intentionally mirror the overall changes for this
+    simulator, since there is only one simulated rating/rank progression.
+    """
+    return {
+        "overall_rating_change": elo_change,
+        "overall_rank_change": rank_change,
+        "monthly_rating_change": elo_change,
+        "monthly_rank_change": rank_change,
+        "overall_session_rating_change": session_elo_change,
+        "overall_session_rank_change": session_rank_change,
+        "monthly_session_rating_change": session_elo_change,
+        "monthly_session_rank_change": session_rank_change,
+    }
 
-    monthly_change = random.choice(
-        [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 8, 10]
-    )
 
-    new_overall_rating = overall_rating + overall_change
-    new_monthly_rating = monthly_rating + monthly_change
+def write_state(
+    writer,
+    rating,
+    rank,
+    matches,
+    changes,
+    trigger_match_overlays=False,
+):
+    """Write a rating state using the current OutputWriter interface.
 
-    if overall_change > 0:
-        overall_rank_delta = random.choice([-2, -1, 0, 0, 1])
-    else:
-        overall_rank_delta = random.choice([0, 1, 1, 2, 3])
+    The current writer expects the monthly data under the input key
+    'season', then writes it to data.json as 'monthly'.
+    """
+    data = {
+        "overall": {
+            "rating": rating,
+            "matches": matches,
+            "rank": rank,
+            "peak_rating": rating,
+        },
+        "season": {
+            "rating": rating,
+            "matches": matches,
+            "rank": rank,
+            "peak_rating": rating,
+        },
+    }
 
-    if monthly_change > 0:
-        monthly_rank_delta = random.choice([-2, -1, 0, 0, 1])
-    else:
-        monthly_rank_delta = random.choice([0, 1, 1, 2, 3])
-
-    new_overall_rank = max(1, overall_rank + overall_rank_delta)
-    new_monthly_rank = max(1, monthly_rank + monthly_rank_delta)
-
-    return (
-        new_overall_rating,
-        new_overall_rank,
-        new_monthly_rating,
-        new_monthly_rank,
+    writer.write_output_files(
+        data=data,
+        player_id=PLAYER_ID,
+        changes=changes,
+        update_match_changes=trigger_match_overlays,
+        trigger_match_overlays=trigger_match_overlays,
     )
 
 
 def main():
-    import argparse
-    import time
-
-    parser = argparse.ArgumentParser(
-        description="Generate simulated Strata match output."
-    )
-    parser.add_argument(
-        "iterations",
-        nargs="?",
-        type=int,
-        default=1,
-        help="Number of simulated matches to generate (default: 1).",
-    )
-
-    args = parser.parse_args()
-
-    if args.iterations < 1:
-        parser.error("iterations must be at least 1.")
-
     output_directory = get_output_directory()
     writer = OutputWriter(output_directory)
 
-    # Start from a plausible rating/rank baseline.
-    overall_rating = random.randint(1450, 1650)
-    overall_rank = random.randint(10, 30)
+    # Run the same local HTTP server used by the actual overlay. This allows
+    # OBS/browser-source testing against http://127.0.0.1:<port>/overlay.
+    overlay_server = OverlayServer()
+    overlay_url = overlay_server.start()
 
-    monthly_rating = random.randint(1450, 1650)
-    monthly_rank = random.randint(10, 30)
+    rating = STARTING_RATING
+    rank = STARTING_RANK
+    matches = STARTING_MATCHES
 
-    overall_rating_start = overall_rating
-    overall_rank_start = overall_rank
-    monthly_rating_start = monthly_rating
-    monthly_rank_start = monthly_rank
+    session_elo_change = 0
+    session_rank_change = 0
 
-    overall_matches = 100
-    monthly_matches = 10
-
-    print("Strata Streamer Tool output tester")
+    print("Strata Streamer Tool match simulator")
     print(f"Output directory: {output_directory}")
-    print(f"Simulated matches: {args.iterations}")
+    print(f"Overlay server: {overlay_url}")
+    print(f"Starting Elo: {rating}")
+    print(f"Starting rank: {rank}")
+    print("Press Ctrl+C to stop.")
     print()
 
-    for iteration in range(1, args.iterations + 1):
+    try:
+        while True:
+            faction = random.choice(tuple(FACTIONS))
 
-        (
-            new_overall_rating,
-            new_overall_rank,
-            new_monthly_rating,
-            new_monthly_rank,
-        ) = generate_test_data(
-            overall_rating,
-            overall_rank,
-            monthly_rating,
-            monthly_rank,
-        )
+            # ----------------------------------------------------------
+            # GAME START
+            # ----------------------------------------------------------
+            # Write the current rating/rank first. write_game_start()
+            # then adds local_player_faction to data.json.
+            start_changes = build_changes(
+                0,
+                0,
+                session_elo_change,
+                session_rank_change,
+            )
 
-        changes = {
-            "overall_rating_change":
-                new_overall_rating - overall_rating,
+            write_state(
+                writer=writer,
+                rating=rating,
+                rank=rank,
+                matches=matches,
+                changes=start_changes,
+                trigger_match_overlays=False,
+            )
 
-            "overall_rank_change":
-                new_overall_rank - overall_rank,
+            writer.write_game_start(FACTIONS[faction])
 
-            "monthly_rating_change":
-                new_monthly_rating - monthly_rating,
+            # The OverlayServer reads data.json on each /data or /state
+            # request, so the newly added faction will be picked up by the
+            # next browser-source poll.
+            print(
+                f"In-game: Elo {rating} (+0), Rank #{rank} (+0), "
+                f"Faction {faction}"
+            )
 
-            "monthly_rank_change":
-                new_monthly_rank - monthly_rank,
+            # Generate the result now, but don't write it until after the
+            # simulated 3-second game duration.
+            elo_change, rank_change = generate_changes()
 
-            # Session changes are cumulative because they are measured
-            # against the original baseline from before the first match.
-            "overall_session_rating_change":
-                new_overall_rating - overall_rating_start,
+            new_rating = rating + elo_change
+            new_rank = max(1, rank - rank_change)
 
-            "overall_session_rank_change":
-                new_overall_rank - overall_rank_start,
+            session_elo_change += elo_change
+            session_rank_change += rank_change
+            new_matches = matches + 1
 
-            "monthly_session_rating_change":
-                new_monthly_rating - monthly_rating_start,
+            time.sleep(3)
 
-            "monthly_session_rank_change":
-                new_monthly_rank - monthly_rank_start,
-        }
+            # ----------------------------------------------------------
+            # GAME END
+            # ----------------------------------------------------------
 
-        data = {
-            "overall": {
-                "rating": new_overall_rating,
-                "rank": new_overall_rank,
-                "matches": overall_matches + iteration,
-            },
-            "monthly": {
-                "rating": new_monthly_rating,
-                "rank": new_monthly_rank,
-                "matches": monthly_matches + iteration,
-            },
-        }
+            # Remove local_player_faction after the result has been written.
+            # This makes the OverlayServer's /state endpoint transition back
+            # to menu state on its next request.
+            writer.write_game_end()
+            
+            end_changes = build_changes(
+                elo_change,
+                rank_change,
+                session_elo_change,
+                session_rank_change,
+            )
 
-        writer.write_output_files(
-            data=data,
-            player_id=12345,
-            changes=changes,
-            update_match_changes=True,
-            trigger_match_overlays=True,
-        )
+            write_state(
+                writer=writer,
+                rating=new_rating,
+                rank=new_rank,
+                matches=new_matches,
+                changes=end_changes,
+                trigger_match_overlays=True,
+            )
 
-        print(
-            f"Match {iteration}/{args.iterations}: "
-            f"Overall Elo {new_overall_rating} "
-            f"({changes['overall_rating_change']:+d}), "
-            f"Rank #{new_overall_rank} | "
-            f"Monthly Elo {new_monthly_rating} "
-            f"({changes['monthly_rating_change']:+d}), "
-            f"Rank #{new_monthly_rank}"
-        )
 
-        overall_rating = new_overall_rating
-        overall_rank = new_overall_rank
-        monthly_rating = new_monthly_rating
-        monthly_rank = new_monthly_rank
 
-        if iteration < args.iterations:
+            print(
+                f"Game ended: Elo {new_rating} ({elo_change:+d}), "
+                f"Rank #{new_rank} ({rank_change:+d})"
+            )
             print("Waiting 10 seconds for the next simulated match...")
+            print()
+
+            rating = new_rating
+            rank = new_rank
+            matches = new_matches
+
             time.sleep(10)
 
-    print()
-    print("Test output generation completed.")
+    except KeyboardInterrupt:
+        print()
+        print("Simulation stopped.")
+
+    finally:
+        overlay_server.stop()
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ DEFAULT_OVERLAY_CONFIG = {
 
     "hud_1": {
         "visibility_mode": "always",
-        "hide_when_observing": False,
+        "hide_when_observing": True,
         "template": "rating_rank",
         "ladder": "monthly",
         "artwork_size": "small",
@@ -32,7 +32,7 @@ DEFAULT_OVERLAY_CONFIG = {
 
     "hud_2": {
         "visibility_mode": "always",
-        "hide_when_observing": False,
+        "hide_when_observing": True,
         "template": "session",
         "ladder": "monthly",
         "artwork_size": "big",

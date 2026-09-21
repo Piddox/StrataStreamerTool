@@ -1,18 +1,26 @@
+# Python
 __pycache__/
 *.py[cod]
 
+# Virtual environments
 .venv/
 venv/
 
+# Runtime/generated output
 output/
-
 *.log
 
+# Build artifacts
+build/
+dist/
+
+# IDE/editor files
 .vscode/
 .idea/
 
+# OS files
 .DS_Store
 Thumbs.db
 
-build/
-dist/
+# Git
+.git/

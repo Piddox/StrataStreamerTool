@@ -1,9 +1,11 @@
 """Local HTTP server for the Strata Browser Source overlay."""
 
 import json
+import os
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+import sys
 from urllib.parse import urlparse
 from datetime import datetime
 
@@ -11,8 +13,15 @@ from overlay_config import DEFAULT_OVERLAY_CONFIG, HOST, PORT
 from overlay_data import TEST_DATA, TEST_DATA_STATES
 from app_paths import get_output_directory
 
-OVERLAY_DIRECTORY = Path(__file__).resolve().parent.parent / "overlay"
-ENABLE_TEST_POSITION_SWITCHING = False
+if getattr(sys, "frozen", False):
+    OVERLAY_DIRECTORY = Path(sys._MEIPASS) / "overlay"
+else:
+    OVERLAY_DIRECTORY = Path(__file__).resolve().parent.parent / "overlay"
+READY_FILE = Path(os.environ.get("TEMP", Path.cwd())) / "StrataStreamerTool.ready"
+HEARTBEAT_INTERVAL = 1.0
+
+
+ENABLE_TEST_MODE = False
 
 # Raised while sending a response when the browser has gone away, for
 # example because it no longer needs an artwork file it already asked
@@ -217,6 +226,13 @@ class _OverlayRequestHandler(BaseHTTPRequestHandler):
             )
             return
 
+        if path == "/overlay/fonts/Oxanium-SemiBold.ttf":
+            self._send_overlay_asset(
+                "fonts/Oxanium-SemiBold.ttf",
+                "font/ttf"
+            )
+            return
+
         if path == "/config":
             self.server.load_live_data()
 
@@ -242,6 +258,14 @@ class _OverlayRequestHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/toggle-test-state":
+            if not ENABLE_TEST_MODE:
+                self._send_response(
+                    404,
+                    "text/plain; charset=utf-8",
+                    "Not found"
+                )
+                return
+
             self.server.toggle_test_state()
             self._send_json(
                 {"in_game": self.server.in_game}
@@ -263,6 +287,8 @@ class OverlayServer:
         self.port = port
         self.http_server = None
         self.thread = None
+        self.heartbeat_thread = None
+        self.heartbeat_stop_event = threading.Event()
 
         self.overlay_config = DEFAULT_OVERLAY_CONFIG
         self.overlay_data = TEST_DATA
@@ -271,15 +297,76 @@ class OverlayServer:
         self.test_position_index = 0
         self.test_data_index = 0
 
+    def _write_heartbeat(self):
+        try:
+            READY_FILE.write_text(
+                f"PID={os.getpid()}\n"
+                f"TIMESTAMP={datetime.now().timestamp()}\n",
+                encoding="utf-8"
+            )
+        except OSError:
+            pass
+
+
+    def _heartbeat_loop(self):
+        self._write_heartbeat()
+
+        while not self.heartbeat_stop_event.wait(
+            HEARTBEAT_INTERVAL
+        ):
+            self._write_heartbeat()
+
+    def _remove_ready_file(self):
+        try:
+            READY_FILE.unlink(missing_ok=True)
+        except OSError:
+            pass
+
     def start(self):
-        if self.http_server is not None: return
-        try: self.http_server = ThreadingHTTPServer((self.host, self.port), _OverlayRequestHandler)
-        except OSError as error: raise RuntimeError(f"Could not start the overlay server on http://{self.host}:{self.port}: {error}") from error
-        self.http_server.overlay_config = self.overlay_config; self.http_server.overlay_data = self.overlay_data; self.http_server.in_game = self.in_game; self.http_server.toggle_test_state = self.toggle_test_state; self.http_server.get_overlay_config = self.get_overlay_config; self.http_server.load_live_data = self.load_live_data
-        self.thread = threading.Thread(target=self.http_server.serve_forever, name="StrataOverlayServer", daemon=True); self.thread.start()
+        if self.http_server is not None:
+            return
+
+        try:
+            self.http_server = ThreadingHTTPServer(
+                (self.host, self.port),
+                _OverlayRequestHandler
+            )
+        except OSError as error:
+            raise RuntimeError(
+                f"Could not start the overlay server on "
+                f"http://{self.host}:{self.port}: {error}"
+            ) from error
+
+        self.http_server.overlay_config = self.overlay_config
+        self.http_server.overlay_data = self.overlay_data
+        self.http_server.in_game = self.in_game
+        self.http_server.toggle_test_state = self.toggle_test_state
+        self.http_server.get_overlay_config = self.get_overlay_config
+        self.http_server.load_live_data = self.load_live_data
+
+        self.thread = threading.Thread(
+            target=self.http_server.serve_forever,
+            name="StrataOverlayServer",
+            daemon=True
+        )
+        self.thread.start()
+
+        self.heartbeat_stop_event.clear()
+
+        self.heartbeat_thread = threading.Thread(
+            target=self._heartbeat_loop,
+            name="StrataOverlayHeartbeat",
+            daemon=True
+        )
+
+        self.heartbeat_thread.start()
+
         return f"http://{self.host}:{self.port}/overlay"
 
     def load_live_data(self):
+        if ENABLE_TEST_MODE:
+            return
+        
         data_path = (
             get_output_directory()
             / "data.json"
@@ -315,20 +402,45 @@ class OverlayServer:
             )
 
     def stop(self):
-        if self.http_server is None: return
-        self.http_server.shutdown(); self.http_server.server_close()
-        if self.thread is not None and self.thread.is_alive(): self.thread.join()
-        self.thread = None; self.http_server = None
+        if self.http_server is None:
+            return
+
+        self.heartbeat_stop_event.set()
+
+        if (
+            self.heartbeat_thread is not None
+            and self.heartbeat_thread.is_alive()
+        ):
+            self.heartbeat_thread.join()
+
+        self.http_server.shutdown()
+        self.http_server.server_close()
+
+        if self.thread is not None and self.thread.is_alive():
+            self.thread.join()
+
+        self._remove_ready_file()
+
+        self.heartbeat_thread = None
+        self.thread = None
+        self.http_server = None
 
     def set_in_game(self, in_game):
         self.in_game = bool(in_game)
         if self.http_server is not None: self.http_server.in_game = self.in_game
 
     def toggle_test_state(self):
+        if not ENABLE_TEST_MODE:
+            return
+
         self.test_position_index = 0
         self.set_in_game(not self.in_game)
 
+
     def cycle_test_data(self):
+        if not ENABLE_TEST_MODE:
+            return
+
         self.test_data_index = (
             self.test_data_index + 1
         ) % len(TEST_DATA_STATES)
@@ -346,7 +458,11 @@ class OverlayServer:
                 self.overlay_data
             )
 
+
     def cycle_test_positions(self):
+        if not ENABLE_TEST_MODE:
+            return
+
         if self.in_game:
             combinations = TEST_POSITION_COMBINATIONS
         else:
@@ -429,7 +545,7 @@ class OverlayServer:
                 )
             )
 
-        if ENABLE_TEST_POSITION_SWITCHING:
+        if ENABLE_TEST_MODE:
             if self.in_game:
                 hud_1_position, hud_2_position = (
                     TEST_POSITION_COMBINATIONS[

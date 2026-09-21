@@ -18,7 +18,10 @@ from app_paths import (
 from updater import RatingUpdater
 from writer import OutputWriter
 from replay_watcher import ReplayWatcher
-from overlay_server import OverlayServer
+from overlay_server import (
+    OverlayServer,
+    ENABLE_TEST_MODE
+)
 
 from app_paths import APP_VERSION
 
@@ -199,18 +202,23 @@ def show_commands():
     Display the available keyboard commands.
     """
 
-    log_block(
-        [
-            None,
-            "Commands:",
-            "[S] Switch to another linked GO account",
-            "[C] Change API token",
+    commands = [
+        None,
+        "Commands:",
+        "[S] Switch to another linked GO account",
+        "[C] Change API token",
+    ]
+
+    if ENABLE_TEST_MODE:
+        commands.extend([
             "[G] Toggle test in-game state",
             "[P] Cycle test HUD positions",
             "[T] Cycle test overlay data",
-            "[Q] Quit"
-        ]
-    )
+        ])
+
+    commands.append("[Q] Quit")
+
+    log_block(commands)
 
 def start_monitoring_session(
     api,
@@ -348,16 +356,14 @@ def main():
     session = None
 
     try:
-
-        overlay_url = overlay_server.start()
-
-        log(f"Browser Source overlay available at: {overlay_url}",False)
-
         config = get_or_create_config()
 
         api = StrataAPI(
             config["api_token"]
         )
+
+        overlay_url = overlay_server.start()
+        log(f"Browser Source overlay available at: {overlay_url}",False)
 
         session = start_monitoring_session(
             api,
@@ -415,38 +421,40 @@ def main():
 
                     show_commands()
 
-                if key == "g":
+                if ENABLE_TEST_MODE:
 
-                    overlay_server.toggle_test_state()
+                    if key == "g":
 
-                    state = (
-                        "in-game"
-                        if overlay_server.in_game
-                        else "out-of-game"
-                    )
+                        overlay_server.toggle_test_state()
 
-                    log(
-                        f"Test overlay state changed to {state}.",
-                        False
-                    )
+                        state = (
+                            "in-game"
+                            if overlay_server.in_game
+                            else "out-of-game"
+                        )
 
-                if key == "p":
+                        log(
+                            f"Test overlay state changed to {state}.",
+                            False
+                        )
 
-                    overlay_server.cycle_test_positions()
+                    if key == "p":
 
-                    log(
-                        "Test HUD positions changed.",
-                        False
-                    )
+                        overlay_server.cycle_test_positions()
 
-                if key == "t":
+                        log(
+                            "Test HUD positions changed.",
+                            False
+                        )
 
-                    overlay_server.cycle_test_data()
+                    if key == "t":
 
-                    log(
-                        "Test overlay data changed.",
-                        False
-                    )
+                        overlay_server.cycle_test_data()
+
+                        log(
+                            "Test overlay data changed.",
+                            False
+                        )
 
                 if key == "c":
 

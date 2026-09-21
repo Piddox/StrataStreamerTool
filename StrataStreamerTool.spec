@@ -1,11 +1,19 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+datas = [
+    ('overlay/index.html', 'overlay'),
+    ('overlay/style.css', 'overlay'),
+    ('overlay/overlay.js', 'overlay'),
+    ('overlay/overlay_data.js', 'overlay'),
+    ('overlay/artwork/*.png', 'overlay/artwork'),
+    ('overlay/fonts/*.ttf', 'overlay/fonts'),
+]
 
 a = Analysis(
     ['src/main.py'],
     pathex=['src'],
     binaries=[],
-    datas=[],
+    datas=datas,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -14,6 +22,7 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
+
 pyz = PYZ(a.pure)
 
 exe = EXE(
