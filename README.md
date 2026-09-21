@@ -4,6 +4,8 @@ Strata Streamer Tool is a Windows application for streamers using the [Strata](h
 
 It automatically monitors your current replay file, detects when a match has finished, retrieves your latest Strata rating and rank, and writes the results to text files that can be displayed in OBS.
 
+It also includes a graphical HUD overlay that can be displayed in OBS using a Browser Source.
+
 You do not need Python or any programming knowledge to use the packaged Windows version.
 
 ## For Streamers
@@ -21,7 +23,7 @@ Download the latest version from the [Releases](https://github.com/Piddox/Strata
 For normal use, you only need:
 
 -   `StrataStreamerTool.exe`
--   `strata_streamer_source.lua` if you want to use the optional OBS Lua integration. It is only needed if you want temporary rating/rank notifications in OBS.
+-   `strata_streamer_watchdog.lua` if you want to use the graphical overlay with automatic OBS refresh.
 
 The executable is standalone and does not require Python to be installed.
 
@@ -111,20 +113,67 @@ You do not need to manually update anything after each match. The tool will dete
 
 ## OBS setup
 
-The tool generates plain text files containing your current Strata information. OBS can read these files directly using its built-in text source functionality.
+Strata Streamer Tool provides two ways to display Strata information in OBS:
 
-The simplest setup does not require the Lua script.
+1. The graphical HUD overlay
+2. Plain-text output files
 
-### Simple OBS setup
+The graphical overlay is the recommended method for new setups.
 
-To display a Strata value in OBS:
+### Graphical HUD overlay
 
-1.  Create an OBS Text source.
-2.  Enable **Read from file**.
-3.  Select the Strata output file you want to display.
-4.  Position and format the source as desired.
+The graphical overlay provides a complete HUD that displays your Strata information and automatically changes its position depending on whether you are in-game or in the game menu.
 
-This is sufficient if you simply want your rating, rank, or another value to remain visible on your stream.
+It is displayed in OBS using a Browser Source.
+
+#### Basic setup
+
+1. Start `StrataStreamerTool.exe`.
+2. In OBS, add a **Browser Source**.
+3. Set the Browser Source URL to:
+
+```text
+http://127.0.0.1:1337/overlay
+```
+
+4. Set the Browser Source dimensions to match your streaming resolution.
+5. Position the Browser Source where you want it in your OBS scene.
+
+The overlay supports 1920×1080 and 2560×1440 streaming resolutions.
+
+The Browser Source should remain in your OBS scene while Strata Streamer Tool is running.
+
+#### Automatic OBS refresh
+
+The release includes `strata_streamer_watchdog.lua`, an optional OBS helper script that automatically refreshes the Browser Source when Strata Streamer Tool starts, stops, or crashes.
+
+This is useful when OBS starts before Strata Streamer Tool, or when the application is restarted while OBS is already running.
+
+To install it:
+
+1. Open **Tools → Scripts** in OBS.
+2. Add `strata_streamer_watchdog.lua`.
+3. Select the Browser Source used for the Strata graphical overlay.
+4. Leave the default check interval unless you have a reason to change it.
+
+The watchdog does not continuously refresh the Browser Source. It only requests a refresh when the availability of Strata Streamer Tool changes.
+
+No external Lua installation is required.
+
+### Plain-text output files
+
+The application also continues to generate plain-text files containing your current Strata information.
+
+These can be displayed using OBS's built-in **Read from file** option.
+
+To display a Strata value:
+
+1. Create an OBS Text source.
+2. Enable **Read from file**.
+3. Select the Strata output file you want to display.
+4. Position and format the source as desired.
+
+This is useful if you want to create your own OBS layout instead of using the graphical overlay.
 
 ### Temporary text displays
 
@@ -137,22 +186,6 @@ For example, you can use it to briefly display:
 -   Other Strata update information
 
 Download `strata_streamer_source.lua` from the same [release](https://github.com/Piddox/StrataStreamerTool/releases/latest) as the executable.
-
-In OBS:
-
-1.  Open **Tools → Scripts**.
-2.  Add `strata_streamer_source.lua`.
-3.  Configure the script instance for the desired Scene and Text Source.
-4.  Select the Strata output file.
-5.  Configure the desired display duration.
-
-You can add multiple instances of the script.
-
-If you use the Lua script for any Strata text source, use it for all Strata text sources that you want synchronized with the Strata output updates. This keeps the different sources synchronized.
-
-The script supports text sources inside OBS groups and nested groups.
-
-No external Lua installation is required.
 
 For more detailed OBS setup instructions, see [OBS Integration](https://github.com/Piddox/StrataStreamerTool/blob/main/obs/README.md).
 
@@ -173,7 +206,7 @@ available to OBS, including:
 -   Session rank change
 -   Combined rating/rank labels
 
-The files are deliberately plain text so they can be used by OBS or other software without requiring an API integration.
+The files are deliberately plain text so they can be used by OBS or other software without requiring an API integration. The graphical overlay uses the same Strata data while providing a complete HUD without requiring individual OBS Text sources.
 
 ### Where are the files?
 
@@ -218,6 +251,19 @@ The exact list of files is available in the application's output directory.
 
 ## Troubleshooting
 
+### The graphical overlay is not displayed in OBS
+
+Make sure:
+
+-   Strata Streamer Tool is running.
+-   The OBS Browser Source is configured with the correct local overlay URL.
+-   The Browser Source is not hidden in the current scene.
+-   The Browser Source dimensions match the intended streaming resolution.
+
+If the overlay was configured while Strata Streamer Tool was not running, start the application and refresh the Browser Source.
+
+If you have installed `strata_streamer_watchdog.lua`, make sure the correct Browser Source is selected in the script settings.
+
 ### The application cannot find the replay file
 
 Check the replay directory configured in the application.
@@ -251,7 +297,7 @@ For example, AI games, LAN/Skirmish games, sandbox games, and other ineligible g
 
 For a qualifying game, the tool also waits for the game to finish and for the result to become available in Strata before updating the output files.
 
-### OBS is not updating a value
+### OBS text source is not updating a value
 
 If you are using OBS's built-in **Read from file** option, verify that the Text source points to the correct file in:
 
@@ -331,6 +377,10 @@ When a new game starts, the replay file becomes active. When the game ends, the 
 The application then waits for the configured rating-update delay and checks Strata until the match result is reflected in the player's rating data.
 
 Once the new rating data is available, the output files are updated.
+
+The graphical overlay uses the local overlay server to display the current Strata information in OBS.
+
+The OBS watchdog can monitor the availability of the local overlay server and refresh the Browser Source when Strata Streamer Tool starts, stops, or crashes.
 
 The OBS Lua script, when used, can react to those output updates and temporarily display selected text sources.
 
