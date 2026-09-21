@@ -6,6 +6,8 @@ It automatically monitors your current replay file, detects when a match has fin
 
 It also includes a graphical HUD overlay that can be displayed in OBS using a Browser Source.
 
+For discussion, feedback, updates and support, see the [Strata Streamer Tool topic on GameReplays.org](https://www.gamereplays.org/community/index.php?showtopic=1084697).
+
 You do not need Python or any programming knowledge to use the packaged Windows version.
 
 ## For Streamers
