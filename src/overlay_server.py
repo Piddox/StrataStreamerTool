@@ -1,5 +1,6 @@
 """Local HTTP server for the Strata Browser Source overlay."""
 
+import copy
 import json
 import os
 import threading
@@ -9,9 +10,21 @@ import sys
 from urllib.parse import urlparse
 from datetime import datetime
 
-from overlay_config import DEFAULT_OVERLAY_CONFIG, HOST, PORT
-from overlay_data import TEST_DATA, TEST_DATA_STATES
 from app_paths import get_output_directory
+from config import save_overlay_config
+from overlay_config import (
+    HOST,
+    PORT,
+    IN_GAME_POSITIONS,
+    IN_MENU_POSITIONS,
+    VISIBILITY_MODES,
+    POSITION_MODES,
+    TEMPLATES,
+    ARTWORK_SIZES,
+    ARTWORK_COLORS,
+    LADDERS
+)
+from overlay_data import TEST_DATA, TEST_DATA_STATES
 
 if getattr(sys, "frozen", False):
     OVERLAY_DIRECTORY = Path(sys._MEIPASS) / "overlay"
@@ -153,8 +166,78 @@ class _OverlayRequestHandler(BaseHTTPRequestHandler):
             etag=etag
         )
 
+    def do_POST(self):
+        path = urlparse(self.path).path
+
+        if path != "/config":
+            self._send_response(
+                404,
+                "text/plain; charset=utf-8",
+                "Not found"
+            )
+            return
+
+        try:
+            content_length = int(
+                self.headers.get("Content-Length", 0)
+            )
+
+            body = self.rfile.read(content_length)
+
+            overlay_config = json.loads(
+                body.decode("utf-8")
+            )
+
+            self.server.update_overlay_config(
+                overlay_config
+            )
+
+            self._send_json(
+                self.server.get_overlay_config()
+            )
+
+        except json.JSONDecodeError as error:
+            self._send_response(
+                400,
+                "application/json; charset=utf-8",
+                json.dumps({"error": str(error)})
+            )
+        except ValueError as error:
+            self._send_response(
+                400,
+                "application/json; charset=utf-8",
+                json.dumps({"error": str(error)})
+            )
+        except RuntimeError as error:
+            self._send_response(
+                500,
+                "application/json; charset=utf-8",
+                json.dumps({"error": str(error)})
+            )
+
     def do_GET(self):
         path = urlparse(self.path).path
+
+        if path == "/settings":
+            self._send_overlay_file(
+                "settings.html",
+                "text/html; charset=utf-8"
+            )
+            return
+
+        if path == "/overlay/settings.css":
+            self._send_overlay_file(
+                "settings.css",
+                "text/css; charset=utf-8"
+            )
+            return
+
+        if path == "/overlay/settings.js":
+            self._send_overlay_file(
+                "settings.js",
+                "application/javascript; charset=utf-8"
+            )
+            return
 
         if path in ("/", "/overlay"):
             self._send_overlay_file(
@@ -282,15 +365,18 @@ class _OverlayRequestHandler(BaseHTTPRequestHandler):
 class OverlayServer:
     """Local HTTP server for the Strata Browser Source overlay."""
 
-    def __init__(self, host=HOST, port=PORT):
+    def __init__(self, config, host=HOST, port=PORT):
         self.host = host
         self.port = port
+        self.config = config
         self.http_server = None
         self.thread = None
         self.heartbeat_thread = None
         self.heartbeat_stop_event = threading.Event()
 
-        self.overlay_config = DEFAULT_OVERLAY_CONFIG
+        self.overlay_config = copy.deepcopy(
+            config["overlay"]
+        )
         self.overlay_data = TEST_DATA
         self.in_game = False
 
@@ -343,6 +429,9 @@ class OverlayServer:
         self.http_server.toggle_test_state = self.toggle_test_state
         self.http_server.get_overlay_config = self.get_overlay_config
         self.http_server.load_live_data = self.load_live_data
+        self.http_server.update_overlay_config = (
+            self.update_overlay_config
+        )
 
         self.thread = threading.Thread(
             target=self.http_server.serve_forever,
@@ -472,78 +561,116 @@ class OverlayServer:
             self.test_position_index + 1
         ) % len(combinations)
 
-    def _get_effective_artwork_color(self, hud_config):
-        artwork_color = hud_config.get(
-            "artwork_color",
-            "faction_dependent"
-        )
 
-        if artwork_color != "faction_dependent":
-            return artwork_color
+    def validate_overlay_config(self, overlay_config):
+        """
+        Validate the complete overlay configuration.
 
-        if not self.in_game:
-            return "blue"
+        Returns the validated configuration or raises ValueError.
+        """
 
-        faction = self.overlay_data.get(
-            "local_player_faction"
-        )
-
-        faction_colors = {
-            "Observer": "blue",
-            "USA": "blue",
-            "China": "red",
-            "GLA": "green"
-        }
-
-        return faction_colors.get(
-            faction,
-            "blue"
-        )
-
-
-    def _get_effective_visibility_mode(self, hud_config):
-        visibility_mode = hud_config.get(
-            "visibility_mode",
-            "automatic"
-        )
-
-        if (
-            self.in_game
-            and hud_config.get(
-                "hide_when_observing",
-                False
+        if not isinstance(overlay_config, dict):
+            raise ValueError(
+                "Overlay configuration must be an object."
             )
-            and self.overlay_data.get(
-                "local_player_faction"
-            ) == "Observer"
-        ):
-            return "never"
-
-        return visibility_mode
-
-    def get_overlay_config(self):
-        config = {
-            **self.overlay_config,
-            "hud_1": {
-                **self.overlay_config["hud_1"]
-            },
-            "hud_2": {
-                **self.overlay_config["hud_2"]
-            }
-        }
 
         for hud_name in ("hud_1", "hud_2"):
-            config[hud_name]["artwork_color"] = (
-                self._get_effective_artwork_color(
-                    self.overlay_config[hud_name]
-                )
-            )
 
-            config[hud_name]["visibility_mode"] = (
-                self._get_effective_visibility_mode(
-                    self.overlay_config[hud_name]
+            if hud_name not in overlay_config:
+                raise ValueError(
+                    f"Missing configuration for {hud_name}."
                 )
+
+            hud_config = overlay_config[hud_name]
+
+            if not isinstance(hud_config, dict):
+                raise ValueError(
+                    f"{hud_name} configuration must be an object."
+                )
+
+            visibility_mode = hud_config.get("visibility_mode")
+            if visibility_mode not in VISIBILITY_MODES:
+                raise ValueError(
+                    f"Invalid visibility mode for {hud_name}."
+                )
+
+            if not isinstance(
+                hud_config.get("hide_when_observing"),
+                bool
+            ):
+                raise ValueError(
+                    f"hide_when_observing for {hud_name} "
+                    f"must be true or false."
+                )
+
+            template = hud_config.get("template")
+            if template not in TEMPLATES:
+                raise ValueError(
+                    f"Invalid template for {hud_name}."
+                )
+
+            ladder = hud_config.get("ladder")
+            if ladder not in LADDERS:
+                raise ValueError(
+                    f"Invalid ladder for {hud_name}."
+                )
+
+            artwork_size = hud_config.get("artwork_size")
+            if artwork_size not in ARTWORK_SIZES:
+                raise ValueError(
+                    f"Invalid artwork size for {hud_name}."
+                )
+
+            artwork_color = hud_config.get("artwork_color")
+            if artwork_color not in ARTWORK_COLORS:
+                raise ValueError(
+                    f"Invalid artwork color for {hud_name}."
+                )
+
+            position_mode = hud_config.get("position_mode")
+            if position_mode not in POSITION_MODES:
+                raise ValueError(
+                    f"Invalid position mode for {hud_name}."
+                )
+
+            in_game_position = hud_config.get(
+                "in_game_position"
             )
+            if in_game_position not in IN_GAME_POSITIONS:
+                raise ValueError(
+                    f"Invalid in-game position for {hud_name}."
+                )
+
+            in_menu_position = hud_config.get(
+                "in_menu_position"
+            )
+            if in_menu_position not in IN_MENU_POSITIONS:
+                raise ValueError(
+                    f"Invalid in-menu position for {hud_name}."
+                )
+
+        return copy.deepcopy(overlay_config)
+
+    def update_overlay_config(self, overlay_config):
+        """
+        Validate, save, and immediately apply a new overlay configuration.
+
+        The existing configuration remains active if validation or saving fails.
+        """
+
+        validated_config = self.validate_overlay_config(
+            overlay_config
+        )
+
+        save_overlay_config(
+            self.config,
+            validated_config
+        )
+
+        self.overlay_config = validated_config
+
+    def get_overlay_config(self):
+        config = copy.deepcopy(self.overlay_config)
 
         if ENABLE_TEST_MODE:
             if self.in_game:

@@ -3,43 +3,29 @@
 HOST = "127.0.0.1"
 PORT = 1337
 
-
-SUPPORTED_RESOLUTIONS = {
-    1920: {
-        "width": 1920,
-        "height": 1080
-    },
-    2560: {
-        "width": 2560,
-        "height": 1440
-    }
-}
-
 DEFAULT_OVERLAY_CONFIG = {
-    "resolution": 2560,
-
     "hud_1": {
         "visibility_mode": "always",
         "hide_when_observing": True,
         "template": "rating_rank",
-        "ladder": "monthly",
+        "ladder": "overall",
         "artwork_size": "small",
         "artwork_color": "faction_dependent",
         "position_mode": "automatic",
         "in_game_position": "hud_left",
-        "in_menu_position": "right_top"
+        "in_menu_position": "right_middle"
     },
 
     "hud_2": {
         "visibility_mode": "always",
         "hide_when_observing": True,
         "template": "session",
-        "ladder": "monthly",
+        "ladder": "overall",
         "artwork_size": "big",
         "artwork_color": "faction_dependent",
         "position_mode": "automatic",
         "in_game_position": "hud_right",
-        "in_menu_position": "right_middle"
+        "in_menu_position": "right_bottom"
     }
 }
 

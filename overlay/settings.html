@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strata Streamer Tool - Overlay Settings</title>
+    <link rel="stylesheet" href="/overlay/settings.css">
+</head>
+<body>
+    <main class="settings-page">
+        <header class="page-header">
+            <div>
+                <h1>Overlay Settings</h1>
+                <p>Configure the two HUD overlay panels shown by the Strata Streamer Tool.</p>
+            </div>
+            <div id="save-status" class="status-message" aria-live="polite"></div>
+        </header>
+
+        <form id="settings-form" novalidate>
+            <div class="hud-sections">
+                <section class="hud-section" aria-labelledby="hud-1-title">
+                    <div class="section-header">
+                        <h2 id="hud-1-title">HUD 1</h2>
+                        <p>Configure the first overlay panel.</p>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="setting-group">
+                            <label for="hud-1-visibility-mode">Visibility<span class="info-icon" tabindex="0" aria-label="Controls when this overlay is displayed: always, only during an actual game/match, only in menus (or on desktop, at least not in an actual game/match), or never.">i<span class="tooltip">Controls when this overlay is displayed: always, only during an actual game/match, only in menus (or on desktop, at least not in an actual game/match), or never.</span></span></label>
+                            <select id="hud-1-visibility-mode">
+                                <option value="always">Always</option>
+                                <option value="in_game">In-game only</option>
+                                <option value="in_menu">In-menu only</option>
+                                <option value="never">Never</option>
+                            </select>
+                        </div>
+                        <div class="setting-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="hud-1-hide-when-observing">
+                                Hide when observing<span class="info-icon" tabindex="0" aria-label="Hides the overlay when the streamer is observing a match rather than playing or being in menu.">i<span class="tooltip">Hides the overlay when the streamer is observing a match rather than playing or being in menu.</span></span>
+                            </label>
+                        </div>
+                        <div class="setting-group">
+                            <label for="hud-1-template">Template<span class="info-icon" tabindex="0" aria-label="Determines which information is displayed on the overlay.">i<span class="tooltip">Determines which information is displayed on the overlay.</span></span></label>
+                            <select id="hud-1-template">
+                                <option value="rating_rank">Elo and Rank</option>
+                                <option value="session">Session</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label for="hud-1-ladder">Ladder<span class="info-icon" tabindex="0" aria-label="Selects whether the overlay uses the Overall or Monthly ladder information.">i<span class="tooltip">Selects whether the overlay uses the Overall or Monthly ladder information.</span></span></label>
+                            <select id="hud-1-ladder">
+                                <option value="overall">Overall</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label for="hud-1-artwork-size">Artwork size<span class="info-icon" tabindex="0" aria-label="Selects the size of the overlay.">i<span class="tooltip">Selects the size of the overlay.</span></span></label>
+                            <select id="hud-1-artwork-size">
+                                <option value="small">Small</option>
+                                <option value="big">Big</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label for="hud-1-artwork-color">Artwork color<span class="info-icon" tabindex="0" aria-label="Selects a fixed overlay color or automatically follows the player's faction color of the current game being played.">i<span class="tooltip">Selects a fixed overlay color or automatically follows the player's faction color of the current game being played.</span></span></label>
+                            <select id="hud-1-artwork-color">
+                                <option value="faction_dependent">Faction-dependent</option>
+                                <option value="blue">Blue (USA)</option>
+                                <option value="red">Red (China)</option>
+                                <option value="green">Green (GLA)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h3>Position</h3>
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <label for="hud-1-position-mode">Position mode<span class="info-icon" tabindex="0" aria-label="Determines whether the overlay is displayed permanently on the in-game position, on the in-menu position, or automatically switches between them depending on whether the player is in a game/match or not.">i<span class="tooltip">Determines whether the overlay is displayed permanently on the in-game position, on the in-menu position, or automatically switches between them depending on whether the player is in a game/match or not.</span></span></label>
+                                <select id="hud-1-position-mode">
+                                    <option value="automatic">Automatic</option>
+                                    <option value="in_game">In-game position</option>
+                                    <option value="in_menu">In-menu position</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label for="hud-1-in-game-position">In-game position<span class="info-icon" tabindex="0" aria-label="Determines where the overlay appears while being in an actual game/match.">i<span class="tooltip">Determines where the overlay appears while being in an actual game/match.</span></span></label>
+                                <select id="hud-1-in-game-position">
+                                    <option value="left_top">Left-Top</option>
+                                    <option value="left_middle">Left-Middle</option>
+                                    <option value="left_bottom">Left-Bottom</option>
+                                    <option value="right_top">Right-Top</option>
+                                    <option value="right_middle">Right-Middle</option>
+                                    <option value="right_bottom">Right-Bottom</option>
+                                    <option value="hud_left">HUD Left</option>
+                                    <option value="hud_right">HUD Right</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label for="hud-1-in-menu-position">In-menu position<span class="info-icon" tabindex="0" aria-label="Determines where the overlay appears when not in an actual game/match, for instance while in game menus, or on desktop.">i<span class="tooltip">Determines where the overlay appears when not in an actual game/match, for instance while in game menus, or on desktop.</span></span></label>
+                                <select id="hud-1-in-menu-position">
+                                    <option value="left_top">Left-Top</option>
+                                    <option value="left_middle">Left-Middle</option>
+                                    <option value="left_bottom">Left-Bottom</option>
+                                    <option value="right_top">Right-Top</option>
+                                    <option value="right_middle">Right-Middle</option>
+                                    <option value="right_bottom">Right-Bottom</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="hud-section" aria-labelledby="hud-2-title">
+                    <div class="section-header">
+                        <h2 id="hud-2-title">HUD 2</h2>
+                        <p>Configure the second overlay panel.</p>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="setting-group">
+                            <label for="hud-2-visibility-mode">Visibility<span class="info-icon" tabindex="0" aria-label="Controls when this overlay is displayed: always, only during an actual game/match, only in menus (or on desktop, at least not in an actual game/match), or never.">i<span class="tooltip">Controls when this overlay is displayed: always, only during an actual game/match, only in menus (or on desktop, at least not in an actual game/match), or never.</span></span></label>
+                            <select id="hud-2-visibility-mode">
+                                <option value="always">Always</option>
+                                <option value="in_game">In-game only</option>
+                                <option value="in_menu">In-menu only</option>
+                                <option value="never">Never</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="hud-2-hide-when-observing">
+                                Hide when observing<span class="info-icon" tabindex="0" aria-label="Hides the overlay when the streamer is observing a match rather than playing or being in menu.">i<span class="tooltip">Hides the overlay when the streamer is observing a match rather than playing or being in menu.</span></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-group">
+                            <label for="hud-2-template">Template<span class="info-icon" tabindex="0" aria-label="Determines which information is displayed on the overlay.">i<span class="tooltip">Determines which information is displayed on the overlay.</span></span></label>
+                            <select id="hud-2-template">
+                                <option value="rating_rank">Elo and Rank</option>
+                                <option value="session">Session</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-group">
+                            <label for="hud-2-ladder">Ladder<span class="info-icon" tabindex="0" aria-label="Selects whether the overlay uses the Overall or Monthly ladder information.">i<span class="tooltip">Selects whether the overlay uses the Overall or Monthly ladder information.</span></span></label>
+                            <select id="hud-2-ladder">
+                                <option value="overall">Overall</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-group">
+                            <label for="hud-2-artwork-size">Artwork size<span class="info-icon" tabindex="0" aria-label="Selects the size of the overlay.">i<span class="tooltip">Selects the size of the overlay.</span></span></label>
+                            <select id="hud-2-artwork-size">
+                                <option value="small">Small</option>
+                                <option value="big">Big</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-group">
+                            <label for="hud-2-artwork-color">Artwork color<span class="info-icon" tabindex="0" aria-label="Selects a fixed overlay color or automatically follows the player's faction color of the current game being played.">i<span class="tooltip">Selects a fixed overlay color or automatically follows the player's faction color of the current game being played.</span></span></label>
+                            <select id="hud-2-artwork-color">
+                                <option value="faction_dependent">Faction-dependent</option>
+                                <option value="blue">Blue (USA)</option>
+                                <option value="red">Red (China)</option>
+                                <option value="green">Green (GLA)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h3>Position</h3>
+
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <label for="hud-2-position-mode">Position mode<span class="info-icon" tabindex="0" aria-label="Determines whether the overlay is displayed permanently on the in-game position, on the in-menu position, or automatically switches between them depending on whether the player is in a game/match or not.">i<span class="tooltip">Determines whether the overlay is displayed permanently on the in-game position, on the in-menu position, or automatically switches between them depending on whether the player is in a game/match or not.</span></span></label>
+                                <select id="hud-2-position-mode">
+                                    <option value="automatic">Automatic</option>
+                                    <option value="in_game">In-game position</option>
+                                    <option value="in_menu">In-menu position</option>
+                                </select>
+                            </div>
+
+                            <div class="setting-group">
+                                <label for="hud-2-in-game-position">In-game position<span class="info-icon" tabindex="0" aria-label="Determines where the overlay appears while being in an actual game/match.">i<span class="tooltip">Determines where the overlay appears while being in an actual game/match.</span></span></label>
+                                <select id="hud-2-in-game-position">
+                                    <option value="left_top">Left-Top</option>
+                                    <option value="left_middle">Left-Middle</option>
+                                    <option value="left_bottom">Left-Bottom</option>
+                                    <option value="right_top">Right-Top</option>
+                                    <option value="right_middle">Right-Middle</option>
+                                    <option value="right_bottom">Right-Bottom</option>
+                                    <option value="hud_left">HUD Left</option>
+                                    <option value="hud_right">HUD Right</option>
+                                </select>
+                            </div>
+
+                            <div class="setting-group">
+                                <label for="hud-2-in-menu-position">In-menu position<span class="info-icon" tabindex="0" aria-label="Determines where the overlay appears when not in an actual game/match, for instance while in game menus, or on desktop.">i<span class="tooltip">Determines where the overlay appears when not in an actual game/match, for instance while in game menus, or on desktop.</span></span></label>
+                                <select id="hud-2-in-menu-position">
+                                    <option value="left_top">Left-Top</option>
+                                    <option value="left_middle">Left-Middle</option>
+                                    <option value="left_bottom">Left-Bottom</option>
+                                    <option value="right_top">Right-Top</option>
+                                    <option value="right_middle">Right-Middle</option>
+                                    <option value="right_bottom">Right-Bottom</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <footer class="page-actions">
+                <button type="button" id="reset-button">Reset</button>
+                <button type="submit" id="save-button">Save settings</button>
+            </footer>
+        </form>
+    </main>
+
+    <script src="/overlay/settings.js"></script>
+</body>
+</html>

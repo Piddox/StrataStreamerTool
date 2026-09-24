@@ -5,6 +5,9 @@ datas = [
     ('overlay/style.css', 'overlay'),
     ('overlay/overlay.js', 'overlay'),
     ('overlay/overlay_data.js', 'overlay'),
+    ('overlay/settings.html', 'overlay'),
+    ('overlay/settings.css', 'overlay'),
+    ('overlay/settings.js', 'overlay'),
     ('overlay/artwork/*.png', 'overlay/artwork'),
     ('overlay/fonts/*.ttf', 'overlay/fonts'),
 ]

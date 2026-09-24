@@ -145,6 +145,44 @@ The overlay supports 1920×1080 and 2560×1440 streaming resolutions.
 
 The Browser Source should remain in your OBS scene while Strata Streamer Tool is running.
 
+#### Overlay settings
+
+The graphical overlay can be configured through the built-in settings page.
+
+With Strata Streamer Tool running, open:
+
+```text
+http://127.0.0.1:1337/settings
+```
+
+The settings page lets you configure both HUD panels independently.
+
+For each HUD, you can configure:
+
+-   Visibility: always, in-game only, in-menu only, or never
+-   Whether the HUD is hidden while observing a match
+-   The information template
+-   Overall or Monthly ladder information
+-   Artwork size
+-   Artwork color, including automatic faction-dependent artwork
+-   Position mode
+-   In-game position
+-   In-menu position
+
+The position mode determines which position is used:
+
+-   **In-game** always uses the configured in-game position.
+-   **In-menu** always uses the configured in-menu position.
+-   **Automatic** switches between the two depending on whether you are currently in a game or not.
+
+The settings are saved when you click **Save settings** and are stored in:
+
+```text
+%APPDATA%\StrataStreamerTool\config.json
+```
+
+The settings page does not need to remain open. Once the settings have been saved, close the page and leave the OBS Browser Source running as normal.
+
 #### Automatic OBS refresh
 
 The release includes `strata_streamer_watchdog.lua`, an optional OBS helper script that automatically refreshes the Browser Source when Strata Streamer Tool starts, stops, or crashes.

@@ -23,7 +23,7 @@ from overlay_server import (
     ENABLE_TEST_MODE
 )
 
-from app_paths import APP_VERSION
+APP_VERSION = "v2.1.0"
 
 @dataclass
 class MonitoringSession:
@@ -351,12 +351,14 @@ def main():
     log()
 
     ensure_directories()
-
-    overlay_server = OverlayServer()
+    
     session = None
+    overlay_server = None
 
     try:
         config = get_or_create_config()
+
+        overlay_server = OverlayServer(config)
 
         api = StrataAPI(
             config["api_token"]
@@ -535,7 +537,8 @@ def main():
                 session.watcher_thread
             )
 
-        overlay_server.stop()
+        if overlay_server is not None:
+            overlay_server.stop()
 
         log()
 

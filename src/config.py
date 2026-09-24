@@ -1,3 +1,4 @@
+import copy
 import json
 from pathlib import Path
 import msvcrt
@@ -7,7 +8,7 @@ from api import (
     NoLinkedPlayersError,
 )
 from app_paths import get_appdata_directory, get_output_directory
-
+from overlay_config import DEFAULT_OVERLAY_CONFIG
 
 CONFIG_DIRECTORY = (
     get_appdata_directory()
@@ -27,9 +28,15 @@ DEFAULT_CONFIG = {
     "api_token": "",
     "replays_directory": "",
     "rating_update_delay_seconds": 0,
-    "selected_player_id": None
+    "selected_player_id": None,
+    "overlay": copy.deepcopy(DEFAULT_OVERLAY_CONFIG)
 }
 
+def get_default_config():
+    """Return a fresh copy of the default configuration."""
+    config = copy.deepcopy(DEFAULT_CONFIG)
+    config["overlay"] = copy.deepcopy(DEFAULT_OVERLAY_CONFIG)
+    return config
 
 def ensure_config_directory():
     """
@@ -61,7 +68,20 @@ def load_config():
             encoding="utf-8"
         ) as file:
 
-            return json.load(file)
+            config = json.load(file)
+
+            migrated = False
+
+            if "overlay" not in config:
+                config["overlay"] = copy.deepcopy(
+                    DEFAULT_OVERLAY_CONFIG
+                )
+                migrated = True
+
+            if migrated:
+                save_config(config)
+
+            return config
 
     except (
         OSError,
@@ -99,6 +119,22 @@ def save_config(config):
             f"Could not save configuration: {error}"
         ) from error
 
+
+def save_overlay_config(config, overlay_config):
+    """
+    Update and save the overlay configuration.
+    """
+
+    updated_config = copy.deepcopy(config)
+    updated_config["overlay"] = copy.deepcopy(
+        overlay_config
+    )
+
+    save_config(updated_config)
+
+    config["overlay"] = copy.deepcopy(
+        overlay_config
+    )
 
 def save_selected_player(
     config,
@@ -249,7 +285,7 @@ def run_setup_wizard():
 
     print_setup_header()
 
-    config = DEFAULT_CONFIG.copy()
+    config = get_default_config()
 
     api_token = prompt_for_api_token()
 

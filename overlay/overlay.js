@@ -177,11 +177,11 @@ const IN_MENU_POSITIONS = {
     },
     right_middle: {
         right: 0,
-        bottom: 270
+        bottom: 490
     },
     right_bottom: {
         right: 0,
-        bottom: 0
+        bottom: 230
     }
 };
 
